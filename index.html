@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lluvia de Corazones</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="container">
+        <!-- Los corazones se generarán aquí mediante JavaScript -->
+    </div>
+    <script>
+        function crearCorazon(x = null, y = null) {
+            const corazon = document.createElement('div');
+            corazon.classList.add('corazon');
+            corazon.innerHTML = '❤';
+            
+            // Si se proporcionan coordenadas (clic), usar esas. Si no, posición aleatoria
+            if (x !== null && y !== null) {
+                corazon.style.left = (x - 10) + 'px'; // -10 para centrar
+                corazon.style.top = (y - 10) + 'px';
+            } else {
+                corazon.style.left = Math.random() * 100 + 'vw';
+                corazon.style.top = '-20px';
+            }
+            
+            // Animación aleatoria
+            corazon.style.animationDuration = Math.random() * 2 + 3 + 's';
+            
+            document.getElementById('container').appendChild(corazon);
+            
+            // Eliminar el corazón después de la animación
+            setTimeout(() => {
+                corazon.remove();
+            }, 5000);
+        }
+
+        // Crear corazones automáticamente
+        setInterval(() => crearCorazon(), 300);
+
+        // Crear corazones al hacer clic o tocar
+        document.addEventListener('click', (e) => {
+            // Crear varios corazones en el punto de clic
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    crearCorazon(e.clientX, e.clientY);
+                }, i * 100);
+            }
+        });
+
+        // Soporte específico para dispositivos táctiles
+        document.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevenir zoom en móviles
+            const touch = e.touches[0];
+            // Crear varios corazones en el punto de toque
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    crearCorazon(touch.clientX, touch.clientY);
+                }, i * 100);
+            }
+        });
+    </script>
+</body>
+</html> 
