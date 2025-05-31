@@ -3,62 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lluvia de Corazones</title>
+    <title>Lluvia de Amor</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="container">
-        <!-- Los corazones se generarán aquí mediante JavaScript -->
-    </div>
+    <div id="container"></div>
+
     <script>
-        function crearCorazon(x = null, y = null) {
-            const corazon = document.createElement('div');
-            corazon.classList.add('corazon');
-            corazon.innerHTML = '❤';
-            
-            // Si se proporcionan coordenadas (clic), usar esas. Si no, posición aleatoria
-            if (x !== null && y !== null) {
-                corazon.style.left = (x - 10) + 'px'; // -10 para centrar
-                corazon.style.top = (y - 10) + 'px';
-            } else {
-                corazon.style.left = Math.random() * 100 + 'vw';
-                corazon.style.top = '-20px';
+        let isDragging = false;
+        let currentDragElement = null;
+        let offsetX, offsetY;
+
+        function createLoveText() {
+            for (let i = 0; i < 5; i++) {
+                const love = document.createElement('div');
+                love.className = 'love-text';
+                love.textContent = 'Love';
+                love.style.left = Math.random() * window.innerWidth + 'px';
+                love.style.animationDuration = (Math.random() * 3 + 1) + 's';
+                love.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                
+                // Hacer el elemento arrastrable
+                love.draggable = true;
+                
+                // Eventos táctiles
+                love.addEventListener('touchstart', handleDragStart);
+                love.addEventListener('touchmove', handleDragMove);
+                love.addEventListener('touchend', handleDragEnd);
+                
+                // Eventos de mouse
+                love.addEventListener('mousedown', handleDragStart);
+                
+                document.getElementById('container').appendChild(love);
+
+                // Detener la animación cuando se agarra
+                love.addEventListener('animationend', () => {
+                    if (!isDragging) {
+                        love.remove();
+                    }
+                });
             }
-            
-            // Animación aleatoria
-            corazon.style.animationDuration = Math.random() * 2 + 3 + 's';
-            
-            document.getElementById('container').appendChild(corazon);
-            
-            // Eliminar el corazón después de la animación
-            setTimeout(() => {
-                corazon.remove();
-            }, 5000);
         }
 
-        // Crear corazones automáticamente
-        setInterval(() => crearCorazon(), 300);
-
-        // Crear corazones al hacer clic o tocar
-        document.addEventListener('click', (e) => {
-            // Crear varios corazones en el punto de clic
-            for (let i = 0; i < 5; i++) {
-                setTimeout(() => {
-                    crearCorazon(e.clientX, e.clientY);
-                }, i * 100);
+        function handleDragStart(e) {
+            if (e.type === 'mousedown') {
+                e.preventDefault();
+                currentDragElement = e.target;
+                isDragging = true;
+                
+                // Calcular el offset del mouse
+                const rect = currentDragElement.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                
+                // Detener la animación
+                currentDragElement.style.animation = 'none';
+                currentDragElement.style.cursor = 'grabbing';
+                
+                // Añadir clase para efecto visual
+                currentDragElement.classList.add('dragging');
+            } else if (e.type === 'touchstart') {
+                e.preventDefault();
+                currentDragElement = e.target;
+                isDragging = true;
+                
+                const touch = e.touches[0];
+                const rect = currentDragElement.getBoundingClientRect();
+                offsetX = touch.clientX - rect.left;
+                offsetY = touch.clientY - rect.top;
+                
+                currentDragElement.style.animation = 'none';
+                currentDragElement.classList.add('dragging');
             }
-        });
+        }
 
-        // Soporte específico para dispositivos táctiles
-        document.addEventListener('touchstart', (e) => {
-            e.preventDefault(); // Prevenir zoom en móviles
-            const touch = e.touches[0];
-            // Crear varios corazones en el punto de toque
-            for (let i = 0; i < 5; i++) {
-                setTimeout(() => {
-                    crearCorazon(touch.clientX, touch.clientY);
-                }, i * 100);
+        function handleDragMove(e) {
+            if (isDragging && currentDragElement) {
+                e.preventDefault();
+                
+                let clientX, clientY;
+                
+                if (e.type === 'touchmove') {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                const x = clientX - offsetX;
+                const y = clientY - offsetY;
+                
+                currentDragElement.style.left = x + 'px';
+                currentDragElement.style.top = y + 'px';
             }
+        }
+
+        function handleDragEnd() {
+            if (currentDragElement) {
+                isDragging = false;
+                currentDragElement.classList.remove('dragging');
+                currentDragElement.style.cursor = 'grab';
+                
+                // Añadir animación de desvanecimiento suave
+                currentDragElement.style.animation = 'fadeAway 1s forwards';
+                setTimeout(() => {
+                    currentDragElement.remove();
+                }, 1000);
+                
+                currentDragElement = null;
+            }
+        }
+
+        // Eventos globales para el mouse
+        document.addEventListener('mousemove', handleDragMove);
+        document.addEventListener('mouseup', handleDragEnd);
+
+        function createHeart(x, y) {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.innerHTML = `
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>`;
+            heart.style.left = x + 'px';
+            heart.style.top = y + 'px';
+            
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = 5;
+            const vx = Math.cos(angle) * velocity;
+            const vy = Math.sin(angle) * velocity;
+            
+            let posX = x;
+            let posY = y;
+            
+            function animate() {
+                posX += vx;
+                posY += vy;
+                heart.style.left = posX + 'px';
+                heart.style.top = posY + 'px';
+                
+                if (posY < window.innerHeight) {
+                    requestAnimationFrame(animate);
+                } else {
+                    heart.remove();
+                }
+            }
+            
+            document.getElementById('container').appendChild(heart);
+            animate();
+
+            setTimeout(() => {
+                heart.remove();
+            }, 2000);
+        }
+
+        setInterval(createLoveText, 50);
+
+        ['click', 'touchstart'].forEach(eventType => {
+            document.addEventListener(eventType, (e) => {
+                if (e.target.classList.contains('love-text')) {
+                    return; // No crear corazones si estamos tocando un "Love"
+                }
+                e.preventDefault();
+                const x = e.touches ? e.touches[0].clientX : e.clientX;
+                const y = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                for(let i = 0; i < 10; i++) {
+                    setTimeout(() => {
+                        createHeart(x, y);
+                    }, i * 50);
+                }
+            });
         });
     </script>
 </body>
